@@ -1,0 +1,88 @@
+// motor_control.ino
+// Simple Arduino sketch to receive single-char commands and drive two DC motors via L298N.
+// Commands:
+// 'F' -> forward, 'B' -> backward, 'L' -> left, 'R' -> right, 'S' -> stop
+
+const int ENA = 5; // PWM pin for motor A
+const int IN1 = 2;
+const int IN2 = 3;
+
+const int ENB = 6; // PWM pin for motor B
+const int IN3 = 4;
+const int IN4 = 7;
+
+const int DEFAULT_SPEED = 200; // 0-255
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(ENA, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  stopMotors();
+}
+
+void loop() {
+  if (Serial.available()) {
+    char c = Serial.read();
+    c = toupper(c);
+    if (c == 'F') forward();
+    else if (c == 'B') backward();
+    else if (c == 'L') leftTurn();
+    else if (c == 'R') rightTurn();
+    else if (c == 'S') stopMotors();
+    // ignore others
+  }
+}
+
+void forward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, DEFAULT_SPEED);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, DEFAULT_SPEED);
+}
+
+void backward() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, DEFAULT_SPEED);
+
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENB, DEFAULT_SPEED);
+}
+
+void leftTurn() {
+  // left turn: left motor slower or backward, right motor forward
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, 150);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, 180);
+}
+
+void rightTurn() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 180);
+
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENB, 150);
+}
+
+void stopMotors() {
+  analogWrite(ENA, 0);
+  analogWrite(ENB, 0);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
